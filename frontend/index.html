@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Vault | Premium Fintech Portal</title>
+    <!-- Outfit Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Premium Stylesheet -->
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- Background glowing gradients -->
+    <div class="gradient-bg">
+        <div class="gradient-sphere sphere-1"></div>
+        <div class="gradient-sphere sphere-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="main-header">
+            <div class="logo">
+                <i class="fa-solid fa-building-columns brand-icon"></i>
+                <span class="brand-name">ANTIGRAVITY <span class="brand-accent">VAULT</span></span>
+            </div>
+            <div id="user-pill" class="user-pill hidden">
+                <i class="fa-solid fa-user-circle"></i>
+                <span id="pill-username">User</span>
+                <button id="btn-logout" class="logout-icon-btn" title="Logout">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </header>
+
+        <main class="main-content">
+            <!-- ================= AUTH PANEL (LOGIN / REGISTER) ================= -->
+            <section id="auth-section" class="auth-section">
+                <div class="glass-card auth-card">
+                    <div class="auth-tabs">
+                        <button id="tab-login" class="auth-tab active">Log In</button>
+                        <button id="tab-register" class="auth-tab">Register</button>
+                    </div>
+
+                    <!-- Login Form -->
+                    <form id="form-login" class="auth-form">
+                        <h2>Welcome Back</h2>
+                        <p class="subtitle">Access your multi-sharded fintech vault</p>
+                        
+                        <div class="input-group">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="login-email" placeholder="Email Address" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="login-password" placeholder="Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Secure Login</button>
+                    </form>
+
+                    <!-- Register Form -->
+                    <form id="form-register" class="auth-form hidden">
+                        <h2>Create Vault Account</h2>
+                        <p class="subtitle">Open your secure financial identity</p>
+                        
+                        <div class="input-group">
+                            <i class="fa-solid fa-user input-icon"></i>
+                            <input type="text" id="register-name" placeholder="Full Name" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-envelope input-icon"></i>
+                            <input type="email" id="register-email" placeholder="Email Address" required>
+                        </div>
+                        <div class="input-group">
+                            <i class="fa-solid fa-lock input-icon"></i>
+                            <input type="password" id="register-password" placeholder="Choose Password" required>
+                        </div>
+                        <button type="submit" class="btn btn-accent btn-block">Register Identity</button>
+                    </form>
+                    
+                    <div id="auth-alert" class="alert hidden"></div>
+                </div>
+            </section>
+
+            <!-- ================= DASHBOARD PANEL (HIDDEN BY DEFAULT) ================= -->
+            <section id="dashboard-section" class="dashboard-section hidden">
+                <!-- Dashboard Welcome and Shard info -->
+                <div class="dashboard-header-card glass-card">
+                    <div class="welcome-text">
+                        <h1>Welcome back, <span id="dash-username">User</span>!</h1>
+                        <p class="dash-subtitle">Fintech Dashboard &bull; Sharded Database Node Access</p>
+                    </div>
+                    <div class="shard-indicator">
+                        <div class="pulse-indicator"></div>
+                        <span>Shard ID Routing Mode: <strong>Dynamic</strong></span>
+                    </div>
+                </div>
+
+                <!-- Main Layout Grid -->
+                <div class="dashboard-grid">
+                    
+                    <!-- LEFT COLUMN: Accounts Display -->
+                    <div class="dash-col-left">
+                        <!-- MY PRIMARY ACCOUNTS -->
+                        <div class="section-title">
+                            <i class="fa-solid fa-wallet"></i> My Owned Accounts
+                        </div>
+                        <div id="owned-accounts-list" class="accounts-grid">
+                            <!-- Dynamically loaded accounts go here -->
+                            <div class="empty-state">No accounts owned. Click "Open Account" to create one.</div>
+                        </div>
+
+                        <!-- SHARED / CO-OWNED ACCOUNTS -->
+                        <div class="section-title">
+                            <i class="fa-solid fa-users"></i> Shared & Joint Accounts
+                        </div>
+                        <div id="shared-accounts-list" class="accounts-grid">
+                            <!-- Dynamically loaded co-owned accounts go here -->
+                            <div class="empty-state">No joint accounts linked.</div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT COLUMN: Actions & Background Queue -->
+                    <div class="dash-col-right">
+                        
+                        <!-- ACTION 1: OPEN ACCOUNT -->
+                        <div class="glass-card action-card">
+                            <h3><i class="fa-solid fa-plus-circle text-primary"></i> Open New Account</h3>
+                            <form id="form-create-account" class="action-form">
+                                <div class="form-row">
+                                    <select id="new-account-type" class="form-input" required>
+                                        <option value="" disabled selected>Account Type</option>
+                                        <option value="Checking">Checking Account</option>
+                                        <option value="Savings">Savings Account</option>
+                                    </select>
+                                    <input type="number" id="new-account-balance" step="0.01" min="0" placeholder="Initial Balance ($)" class="form-input" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block">Create Account</button>
+                            </form>
+                        </div>
+
+                        <!-- ACTION 2: TRANSFER FUNDS (PESSIMISTIC LOCKS) -->
+                        <div class="glass-card action-card">
+                            <h3><i class="fa-solid fa-right-left-arrows text-accent"></i> Safe Transfer (Pessimistic Lock)</h3>
+                            <form id="form-transfer" class="action-form">
+                                <div class="form-row-vertical">
+                                    <input type="number" id="transfer-sender" placeholder="Sender Account ID" class="form-input" required>
+                                    <input type="number" id="transfer-receiver" placeholder="Receiver Account ID" class="form-input" required>
+                                    <input type="number" id="transfer-amount" step="0.01" min="0.01" placeholder="Amount ($)" class="form-input" required>
+                                </div>
+                                <button type="submit" class="btn btn-accent btn-sm btn-block">Execute Secure Transfer</button>
+                            </form>
+                        </div>
+
+                        <!-- ACTION 3: ADD CO-OWNER (MANY-TO-MANY LINK) -->
+                        <div class="glass-card action-card">
+                            <h3><i class="fa-solid fa-user-plus text-primary"></i> Share Account Access</h3>
+                            <form id="form-add-co-owner" class="action-form">
+                                <div class="form-row">
+                                    <input type="number" id="share-account-id" placeholder="Account ID" class="form-input" required>
+                                    <input type="number" id="share-user-id" placeholder="User ID to Add" class="form-input" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-sm btn-block">Grant Joint Ownership</button>
+                            </form>
+                        </div>
+
+                        <!-- ACTION 4: BG WORKER QUEUE TEST -->
+                        <div class="glass-card action-card">
+                            <h3><i class="fa-solid fa-envelope-open-text text-info"></i> Decoupled Background Task (Celery Sim)</h3>
+                            <p class="card-desc">Simulate a heavy 4-second report job. FastAPI instantly responds, task runs out-of-process.</p>
+                            <form id="form-enqueue" class="action-form">
+                                <input type="email" id="enqueue-email" placeholder="Report Notification Email" class="form-input" required>
+                                <button type="submit" class="btn btn-info btn-sm btn-block">Queue Background Job</button>
+                            </form>
+                            <!-- Live worker status log window -->
+                            <div class="worker-log-console">
+                                <div class="console-header">
+                                    <span class="console-title"><i class="fa-solid fa-terminal"></i> Background Process Logs</span>
+                                    <span class="status-indicator-green"><i class="fa-solid fa-circle"></i> Listening</span>
+                                </div>
+                                <div id="console-logs" class="console-body">
+                                    <div class="log-line text-muted">[SYSTEM] Worker process initialized on daemon thread.</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </section>
+        </main>
+        
+        <footer class="main-footer">
+            <p>&copy; 2026 Antigravity Vault Core. Built with FastAPI, PostgreSQL, SQLAlchemy, & multiprocessing.</p>
+        </footer>
+    </div>
+    
+    <!-- Core Application Logic -->
+    <script src="/static/app.js"></script>
+</body>
+</html>
