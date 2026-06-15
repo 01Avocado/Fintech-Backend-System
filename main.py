@@ -243,8 +243,6 @@ def transfer_funds(transfer : schema.TransferCreate, db : Session = Depends(get_
 def background_worker(queue: multiprocessing.Queue):
     import time
     import os
-    import smtplib
-    from email.mime.text import MIMEText
     from dotenv import load_dotenv
 
     # Ensure environment variables are loaded in this child process
@@ -262,45 +260,34 @@ def background_worker(queue: multiprocessing.Queue):
 
         print(f"\n[WORKER] Received Job: {job['task_name']} for {job['target_email']}", flush=True)
         
-        # Read SMTP Settings
-        smtp_host = os.getenv("SMTP_HOST")
-        smtp_port = os.getenv("SMTP_PORT")
-        smtp_user = os.getenv("SMTP_USER")
-        smtp_password = os.getenv("SMTP_PASSWORD")
-
-        # Determine if we should send a real email or run simulation
-        is_smtp_configured = smtp_host and smtp_port and smtp_user and smtp_password and "your-email" not in smtp_user
+        # Check if we have email configured (either Resend or SMTP)
+        is_configured = os.getenv("RESEND_API_KEY") or (
+            os.getenv("SMTP_HOST") and os.getenv("SMTP_PORT") and 
+            os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD") and 
+            "your-email" not in os.getenv("SMTP_USER", "")
+        )
         
-        if is_smtp_configured:
+        if is_configured:
             try:
-                print(f"[WORKER] Connecting to SMTP server {smtp_host}:{smtp_port}...", flush=True)
-                msg = MIMEText(
+                body = (
                     f"Hello,\n\n"
                     f"Your background task '{job['task_name']}' has been processed successfully by the Antigravity Vault Worker node.\n\n"
                     f"Best regards,\n"
                     f"Antigravity Vault Core"
                 )
-                msg["Subject"] = f"Antigravity Vault: {job['task_name']} Complete"
-                msg["From"] = smtp_user
-                msg["To"] = job["target_email"]
-
-                port = int(smtp_port)
-                if port == 465:
-                    with smtplib.SMTP_SSL(smtp_host, port) as server:
-                        server.login(smtp_user, smtp_password)
-                        server.sendmail(smtp_user, job["target_email"], msg.as_string())
-                else:
-                    with smtplib.SMTP(smtp_host, port) as server:
-                        server.starttls()
-                        server.login(smtp_user, smtp_password)
-                        server.sendmail(smtp_user, job["target_email"], msg.as_string())
-                print(f"[WORKER] SUCCESS: Real email notification sent to {job['target_email']}!\n", flush=True)
+                subject = f"Antigravity Vault: {job['task_name']} Complete"
+                
+                # Import utils inside worker to avoid serializing issues during process spawn
+                import utils
+                print(f"[WORKER] Sending real email notification to {job['target_email']}...", flush=True)
+                res = utils.send_email(job["target_email"], subject, body)
+                print(f"[WORKER] SUCCESS: {res}!\n", flush=True)
             except Exception as e:
-                print(f"[WORKER] SMTP Connection failed: {e}. Falling back to simulation mode...", flush=True)
+                print(f"[WORKER] Email sending failed: {e}. Falling back to simulation mode...", flush=True)
                 time.sleep(4)
                 print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n", flush=True)
         else:
-            print("[WORKER] SMTP credentials not configured in .env. Running in simulation mode (4 seconds)...", flush=True)
+            print("[WORKER] Email credentials not configured. Running in simulation mode (4 seconds)...", flush=True)
             time.sleep(4)
             print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n", flush=True)
 
@@ -334,54 +321,18 @@ def enqueue_task(email:str):
     task_queue.put(job_ticket)
     return {"message": "Job enqueued for background processing","job" : job_ticket}
 
-# Synchronous test endpoint to debug SMTP settings directly
+# Synchronous test endpoint to debug SMTP/Resend settings directly
 @app.get("/test/send_email_sync")
 def send_email_sync(email: str):
-    import smtplib
-    from email.mime.text import MIMEText
-    import os
+    import utils
     import traceback
-    from dotenv import load_dotenv
-
-    load_dotenv()
-    smtp_host = os.getenv("SMTP_HOST")
-    smtp_port = os.getenv("SMTP_PORT")
-    smtp_user = os.getenv("SMTP_USER")
-    smtp_password = os.getenv("SMTP_PASSWORD")
-
-    if not all([smtp_host, smtp_port, smtp_user, smtp_password]):
-        return {
-            "status": "error",
-            "message": "SMTP credentials incomplete in environment variables.",
-            "env_present": {
-                "SMTP_HOST": bool(smtp_host),
-                "SMTP_PORT": bool(smtp_port),
-                "SMTP_USER": bool(smtp_user),
-                "SMTP_PASSWORD": bool(smtp_password)
-            }
-        }
-
     try:
-        msg = MIMEText(
-            "This is a synchronous test email from Antigravity Vault to verify SMTP settings."
-        )
-        msg["Subject"] = "Antigravity Vault: SMTP Test"
-        msg["From"] = smtp_user
-        msg["To"] = email
-
-        port = int(smtp_port)
-        if port == 465:
-            with smtplib.SMTP_SSL(smtp_host, port, timeout=10) as server:
-                server.login(smtp_user, smtp_password)
-                server.sendmail(smtp_user, email, msg.as_string())
-        else:
-            with smtplib.SMTP(smtp_host, port, timeout=10) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.sendmail(smtp_user, email, msg.as_string())
+        subject = "Antigravity Vault: Email Test"
+        body = "This is a synchronous test email from Antigravity Vault to verify email settings."
+        result = utils.send_email(email, subject, body)
         return {
             "status": "success",
-            "message": f"Successfully sent test email to {email}."
+            "message": result
         }
     except Exception as e:
         return {
