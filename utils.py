@@ -52,7 +52,8 @@ def send_email(to_email: str, subject: str, body_text: str):
         url = "https://api.resend.com/emails"
         headers = {
             "Authorization": f"Bearer {resend_api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "User-Agent": "AntigravityVault/1.0"
         }
         # Resend free onboarding allows sending from onboarding@resend.dev
         sender = os.getenv("RESEND_SENDER", "onboarding@resend.dev")
