@@ -250,17 +250,17 @@ def background_worker(queue: multiprocessing.Queue):
     # Ensure environment variables are loaded in this child process
     load_dotenv()
     
-    print("\n[WORKER] Background worker process started and listening for jobs...\n")
+    print("\n[WORKER] Background worker process started and listening for jobs...\n", flush=True)
     while True:
         # Get a task from the Queue(blocks until job is available)
         job = queue.get()
 
         # Check for "poison spill" to safely shutdown
         if job is None:
-            print("\n[WORKER] Worker process shutting down \n")
+            print("\n[WORKER] Worker process shutting down \n", flush=True)
             break
 
-        print(f"\n[WORKER] Received Job: {job['task_name']} for {job['target_email']}")
+        print(f"\n[WORKER] Received Job: {job['task_name']} for {job['target_email']}", flush=True)
         
         # Read SMTP Settings
         smtp_host = os.getenv("SMTP_HOST")
@@ -273,7 +273,7 @@ def background_worker(queue: multiprocessing.Queue):
         
         if is_smtp_configured:
             try:
-                print(f"[WORKER] Connecting to SMTP server {smtp_host}:{smtp_port}...")
+                print(f"[WORKER] Connecting to SMTP server {smtp_host}:{smtp_port}...", flush=True)
                 msg = MIMEText(
                     f"Hello,\n\n"
                     f"Your background task '{job['task_name']}' has been processed successfully by the Antigravity Vault Worker node.\n\n"
@@ -294,15 +294,15 @@ def background_worker(queue: multiprocessing.Queue):
                         server.starttls()
                         server.login(smtp_user, smtp_password)
                         server.sendmail(smtp_user, job["target_email"], msg.as_string())
-                print(f"[WORKER] SUCCESS: Real email notification sent to {job['target_email']}!\n")
+                print(f"[WORKER] SUCCESS: Real email notification sent to {job['target_email']}!\n", flush=True)
             except Exception as e:
-                print(f"[WORKER] SMTP Connection failed: {e}. Falling back to simulation mode...")
+                print(f"[WORKER] SMTP Connection failed: {e}. Falling back to simulation mode...", flush=True)
                 time.sleep(4)
-                print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n")
+                print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n", flush=True)
         else:
-            print("[WORKER] SMTP credentials not configured in .env. Running in simulation mode (4 seconds)...")
+            print("[WORKER] SMTP credentials not configured in .env. Running in simulation mode (4 seconds)...", flush=True)
             time.sleep(4)
-            print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n")
+            print(f"[WORKER] SUCCESS: Finished Job: {job['task_name']} for {job['target_email']} (simulated)\n", flush=True)
 
 # Intialize a thread/process safe Queue
 task_queue = multiprocessing.Queue()
