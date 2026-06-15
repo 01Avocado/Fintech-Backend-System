@@ -40,13 +40,52 @@ def hash_password(password: str):
 def verify_password(plain_password: str, hashed_password: str):
     return pwd_context.verify(plain_password, hashed_password)
 
-# Unified helper to send emails via Resend HTTP API or SMTP
+# Unified helper to send emails via Brevo HTTP API, Resend HTTP API, or SMTP
 def send_email(to_email: str, subject: str, body_text: str):
     import smtplib
     import urllib.request
     import json
     from email.mime.text import MIMEText
 
+    # Option 1: Send via Brevo API (Supports sending to anyone with verified single sender email!)
+    brevo_api_key = os.getenv("BREVO_API_KEY")
+    if brevo_api_key:
+        url = "https://api.brevo.com/v3/smtp/email"
+        headers = {
+            "accept": "application/json",
+            "api-key": brevo_api_key,
+            "content-type": "application/json",
+            "User-Agent": "AntigravityVault/1.0"
+        }
+        sender_email = os.getenv("BREVO_SENDER", os.getenv("SMTP_USER"))
+        if not sender_email:
+            raise ValueError("BREVO_SENDER or SMTP_USER environment variable must be set for Brevo.")
+        
+        payload = {
+            "sender": {
+                "name": "Antigravity Vault",
+                "email": sender_email
+            },
+            "to": [
+                {
+                    "email": to_email
+                }
+            ],
+            "subject": subject,
+            "textContent": body_text
+        }
+        
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers=headers,
+            method="POST"
+        )
+        with urllib.request.urlopen(req, timeout=10) as response:
+            res_body = response.read().decode("utf-8")
+            return f"Sent via Brevo HTTP API. Response: {res_body}"
+
+    # Option 2: Send via Resend HTTP API (Restricted to own account email unless domain verified)
     resend_api_key = os.getenv("RESEND_API_KEY")
     if resend_api_key:
         url = "https://api.resend.com/emails"

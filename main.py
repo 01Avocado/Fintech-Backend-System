@@ -260,8 +260,8 @@ def background_worker(queue: multiprocessing.Queue):
 
         print(f"\n[WORKER] Received Job: {job['task_name']} for {job['target_email']}", flush=True)
         
-        # Check if we have email configured (either Resend or SMTP)
-        is_configured = os.getenv("RESEND_API_KEY") or (
+        # Check if we have email configured (either Brevo, Resend, or SMTP)
+        is_configured = os.getenv("BREVO_API_KEY") or os.getenv("RESEND_API_KEY") or (
             os.getenv("SMTP_HOST") and os.getenv("SMTP_PORT") and 
             os.getenv("SMTP_USER") and os.getenv("SMTP_PASSWORD") and 
             "your-email" not in os.getenv("SMTP_USER", "")
