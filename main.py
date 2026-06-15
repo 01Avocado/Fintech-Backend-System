@@ -333,3 +333,59 @@ def enqueue_task(email:str):
 
     task_queue.put(job_ticket)
     return {"message": "Job enqueued for background processing","job" : job_ticket}
+
+# Synchronous test endpoint to debug SMTP settings directly
+@app.get("/test/send_email_sync")
+def send_email_sync(email: str):
+    import smtplib
+    from email.mime.text import MIMEText
+    import os
+    import traceback
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    smtp_host = os.getenv("SMTP_HOST")
+    smtp_port = os.getenv("SMTP_PORT")
+    smtp_user = os.getenv("SMTP_USER")
+    smtp_password = os.getenv("SMTP_PASSWORD")
+
+    if not all([smtp_host, smtp_port, smtp_user, smtp_password]):
+        return {
+            "status": "error",
+            "message": "SMTP credentials incomplete in environment variables.",
+            "env_present": {
+                "SMTP_HOST": bool(smtp_host),
+                "SMTP_PORT": bool(smtp_port),
+                "SMTP_USER": bool(smtp_user),
+                "SMTP_PASSWORD": bool(smtp_password)
+            }
+        }
+
+    try:
+        msg = MIMEText(
+            "This is a synchronous test email from Antigravity Vault to verify SMTP settings."
+        )
+        msg["Subject"] = "Antigravity Vault: SMTP Test"
+        msg["From"] = smtp_user
+        msg["To"] = email
+
+        port = int(smtp_port)
+        if port == 465:
+            with smtplib.SMTP_SSL(smtp_host, port, timeout=10) as server:
+                server.login(smtp_user, smtp_password)
+                server.sendmail(smtp_user, email, msg.as_string())
+        else:
+            with smtplib.SMTP(smtp_host, port, timeout=10) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.sendmail(smtp_user, email, msg.as_string())
+        return {
+            "status": "success",
+            "message": f"Successfully sent test email to {email}."
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e),
+            "traceback": traceback.format_exc()
+        }
