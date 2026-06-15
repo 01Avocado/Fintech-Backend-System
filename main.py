@@ -269,13 +269,29 @@ def background_worker(queue: multiprocessing.Queue):
         
         if is_configured:
             try:
-                body = (
-                    f"Hello,\n\n"
-                    f"Your background task '{job['task_name']}' has been processed successfully by the Antigravity Vault Worker node.\n\n"
-                    f"Best regards,\n"
-                    f"Antigravity Vault Core"
-                )
-                subject = f"Antigravity Vault: {job['task_name']} Complete"
+                if job["task_name"] == "send welcome email":
+                    subject = "Welcome to Antigravity Vault! 🚀"
+                    body = (
+                        f"Hey there,\n\n"
+                        f"Welcome to Antigravity Vault! 🌌 We're absolutely thrilled to have you join our next-generation, high-performance banking experience.\n\n"
+                        f"Your secure account has been initialized across our distributed database shards, and you're now ready to perform lightning-fast transfers with complete cryptographic peace of mind.\n\n"
+                        f"To help you get started:\n"
+                        f"• Explore your glassmorphic user dashboard\n"
+                        f"• Try a secure locked transfer\n"
+                        f"• Set up your joint co-owner accounts\n\n"
+                        f"If you need any guidance or want to geek out over our async systems architecture, we are always here for you.\n\n"
+                        f"To the stars and beyond! 💫\n\n"
+                        f"Warmly,\n"
+                        f"The Antigravity Team"
+                    )
+                else:
+                    subject = f"Antigravity Vault: {job['task_name']} Complete"
+                    body = (
+                        f"Hello,\n\n"
+                        f"Your background task '{job['task_name']}' has been processed successfully by the Antigravity Vault Worker node.\n\n"
+                        f"Best regards,\n"
+                        f"Antigravity Vault Core"
+                    )
                 
                 # Import utils inside worker to avoid serializing issues during process spawn
                 import utils
@@ -327,8 +343,20 @@ def send_email_sync(email: str):
     import utils
     import traceback
     try:
-        subject = "Antigravity Vault: Email Test"
-        body = "This is a synchronous test email from Antigravity Vault to verify email settings."
+        subject = "Welcome to Antigravity Vault! 🚀"
+        body = (
+            f"Hey there,\n\n"
+            f"Welcome to Antigravity Vault! 🌌 We're absolutely thrilled to have you join our next-generation, high-performance banking experience.\n\n"
+            f"Your secure account has been initialized across our distributed database shards, and you're now ready to perform lightning-fast transfers with complete cryptographic peace of mind.\n\n"
+            f"To help you get started:\n"
+            f"• Explore your glassmorphic user dashboard\n"
+            f"• Try a secure locked transfer\n"
+            f"• Set up your joint co-owner accounts\n\n"
+            f"If you need any guidance or want to geek out over our async systems architecture, we are always here for you.\n\n"
+            f"To the stars and beyond! 💫\n\n"
+            f"Warmly,\n"
+            f"The Antigravity Team"
+        )
         result = utils.send_email(email, subject, body)
         return {
             "status": "success",
